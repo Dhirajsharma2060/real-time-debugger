@@ -49,6 +49,18 @@ io.on('connection', (socket) => {
     socket.on(ACTIONS.SYNC_CODE, ({ socketId, code }) => {
         io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
     });
+    // WebRTC Signaling
+    //socket.on('webrtc:offer', (data) => {
+    //    io.to(data.to).emit('webrtc:offer', { sdp: data.sdp, from: socket.id });
+    //});
+
+    //socket.on('webrtc:answer', (data) => {
+    //    io.to(data.to).emit('webrtc:answer', { sdp: data.sdp, from: socket.id });
+    //});
+
+    //socket.on('webrtc:ice-candidate', (data) => {
+    //    io.to(data.to).emit('webrtc:ice-candidate', { candidate: data.candidate, from: socket.id });
+    //});
 
     socket.on('disconnecting', () => {
         const rooms = [...socket.rooms];
