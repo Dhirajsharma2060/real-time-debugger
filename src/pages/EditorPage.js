@@ -5,6 +5,7 @@ import Client from '../componenets/Client';
 import Editor from '../componenets/Editor';
 import { initSocket } from '../socket';
 import { useLocation, useNavigate, Navigate, useParams } from 'react-router-dom';
+import ResizablePane from '../componenets/ResizablePane';
 
 const languages = [
     { id: 63, name: "JavaScript (Node.js 12.14.0)" },
@@ -26,15 +27,15 @@ const languages = [
 
 const EditorPage = () => {
     const socketRef = useRef(null);
-    const codeRef = useRef(null);
-    const inputRef = useRef(null);
     const location = useLocation();
     const { roomId } = useParams();
     const reactNavigator = useNavigate();
     const [clients, setClients] = useState([]);
-    const [output, setOutput] = useState('');
     const [language, setLanguage] = useState(languages[0].id);
-    const [userInput, setUserInput] = useState('');
+    const [output, setOutput] = useState('');
+    const codeRef = useRef(null); // Define codeRef
+    const inputRef = useRef(null); // Define inputRef
+    const [userInput, setUserInput] = useState(''); // Define userInput and setUserInput
 
     useEffect(() => {
         const init = async () => {
@@ -42,14 +43,19 @@ const EditorPage = () => {
                 socketRef.current = await initSocket();
 
                 // Register error handlers
-                const handleErrors = (e) => {
-                    console.log('Socket error:', e);
+                socketRef.current.on('connect_error', (err) => handleErrors(err));
+                socketRef.current.on('connect_failed', (err) => handleErrors(err));
+
+                function handleErrors(e) {
+                    console.log('socket error', e);
                     toast.error('Socket connection failed, try again later.');
                     reactNavigator('/');
-                };
+                }
 
-                socketRef.current.on('connect_error', handleErrors);
-                socketRef.current.on('connect_failed', handleErrors);
+                // Listen for output events
+                socketRef.current.on('output', ({ output }) => {
+                    setOutput(output);
+                });
 
                 // Emit join event
                 socketRef.current.emit(ACTIONS.JOIN, {
@@ -130,80 +136,56 @@ const EditorPage = () => {
             const token = data.token;
             console.log('Received token:', token);
 
-            let result;
-            while (true) {
-                const resultResponse = await fetch(`https://judge0-ce.p.rapidapi.com/submissions/${token}`, {
-                    headers: {
-                        'x-rapidapi-key': process.env.REACT_APP_RAPIDAPI_KEY, // Replace with your RapidAPI key
-                        'x-rapidapi-host': process.env.REACT_APP_RAPIDAPI_HOST
-                    }
-                });
-                result = await resultResponse.json();
-
-                console.log('Execution result:', result);
-
-                if (result.status.id !== 2) { // Status 2 means "Processing"
-                    break;
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second before polling again
-            }
-
-            let output = 'No output';
-            if (result.stdout) {
-                try {
-                    if (typeof result.stdout !== 'string') {
-                        console.error('stdout is not a string:', result.stdout);
-                        output = 'stdout is not a valid string';
-                    } else if (!/^[A-Za-z0-9+/]+={0,2}$/.test(result.stdout)) {  // Basic Base64 Validation
-                        console.log('stdout is not base64 encoded:', result.stdout);
-                        output = result.stdout; // Use the plain text output directly
-                    } else {
-                        output = atob(result.stdout);
-                    }
-                } catch (e) {
-                    console.error('Failed to decode stdout:', e);
-                    output = 'Failed to decode stdout';
-                }
-            } else if (result.stderr) {
-                try {
-                    if (typeof result.stderr !== 'string') {
-                        console.error('stderr is not a string:', result.stderr);
-                        output = 'stderr is not a valid string';
-                    } else if (!/^[A-Za-z0-9+/]+={0,2}$/.test(result.stderr)) {  // Basic Base64 Validation
-                        console.log('stderr is not base64 encoded:', result.stderr);
-                        output = result.stderr; // Use the plain text output directly
-                    } else {
-                        output = atob(result.stderr);
-                    }
-                } catch (e) {
-                    console.error('Failed to decode stderr:', e);
-                    output = 'Failed to decode stderr';
-                }
-            } else if (result.compile_output) {
-                try {
-                    if (typeof result.compile_output !== 'string') {
-                        console.error('compile_output is not a string:', result.compile_output);
-                        output = 'compile_output is not a valid string';
-                    } else if (!/^[A-Za-z0-9+/]+={0,2}$/.test(result.compile_output)) {  // Basic Base64 Validation
-                        console.log('compile_output is not base64 encoded:', result.compile_output);
-                        output = result.compile_output; // Use the plain text output directly
-                    } else {
-                        output = atob(result.compile_output);
-                    }
-                } catch (e) {
-                    console.error('Failed to decode compile output:', e);
-                    output = 'Failed to decode compile output';
-                }
-            }
-
-            console.log('Final output:', output);
-            setOutput(output);
+            handleCodeExecution(token);
         } catch (error) {
             console.error('Error executing code:', error);
             setOutput(`Error: ${error.message}`);
         }
     }, [language, userInput]);
+
+    const handleCodeExecution = async (token) => {
+        console.log('Received token:', token);
+
+        let result;
+        while (true) {
+            const resultResponse = await fetch(`https://judge0-ce.p.rapidapi.com/submissions/${token}`, {
+                headers: {
+                    'x-rapidapi-key': process.env.REACT_APP_RAPIDAPI_KEY, // Replace with your RapidAPI key
+                    'x-rapidapi-host': process.env.REACT_APP_RAPIDAPI_HOST
+                }
+            });
+            result = await resultResponse.json();
+
+            console.log('Execution result:', result);
+
+            if (result.status.id !== 2) { // Status 2 means "Processing"
+                break;
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second before polling again
+        }
+
+        let output = 'No output';
+        if (result.stdout) {
+            try {
+                if (typeof result.stdout !== 'string') {
+                    console.error('stdout is not a string:', result.stdout);
+                    output = 'stdout is not a valid string';
+                } else if (!/^[A-Za-z0-9+/]+={0,2}$/.test(result.stdout)) {  // Basic Base64 Validation
+                    console.log('stdout is not base64 encoded:', result.stdout);
+                    output = result.stdout; // Use the plain text output directly
+                } else {
+                    output = atob(result.stdout);
+                }
+            } catch (e) {
+                console.error('Failed to decode stdout:', e);
+                output = 'Failed to decode stdout';
+            }
+        }
+
+        setOutput(output);
+        socketRef.current.emit('output', { roomId, output });
+    };
 
     if (!location.state) {
         return <Navigate to="/" />;
@@ -252,8 +234,10 @@ const EditorPage = () => {
                     <h3>Output:</h3>
                     <pre>{output}</pre>
                 </div>
+                <ResizablePane output={output} />
             </div>
         </div>
     );
 };
+
 export default EditorPage;

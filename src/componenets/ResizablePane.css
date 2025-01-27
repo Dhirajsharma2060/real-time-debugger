@@ -1,0 +1,46 @@
+.resizable-pane {
+    display: flex;
+    flex-direction: column;
+    height: 7vh;
+    position: relative;
+}
+
+.pane {
+    position: relative;
+}
+
+.top-pane {
+    height: 38%; /* Adjust the height as needed */
+    overflow: auto;
+}
+
+.bottom-pane {
+    display: flex;
+    height: 60%; /* Adjust the height as needed */
+    overflow: hidden;
+}
+
+.left-pane, .right-pane {
+    flex: 1;
+    overflow: auto;
+}
+
+.left-pane {
+    resize: horizontal;
+    overflow: auto;
+}
+
+.right-pane {
+    resize: horizontal;
+    overflow: auto;
+}
+
+.drag-handle {
+    height: 10px;
+    background: #ccc;
+    cursor: row-resize;
+    position: absolute;
+    width: 100%;
+    top: 40%; /* Adjust the position as needed */
+    z-index: 1;
+}

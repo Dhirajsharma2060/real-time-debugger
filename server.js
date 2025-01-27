@@ -15,7 +15,6 @@ app.use((req, res, next) => {
 
 const userSocketMap = {};
 function getAllConnectedClients(roomId) {
-    // Map
     return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(
         (socketId) => {
             return {
@@ -27,7 +26,7 @@ function getAllConnectedClients(roomId) {
 }
 
 io.on('connection', (socket) => {
-    console.log('socket connected', socket.id);
+    console.log('Socket connected:', socket.id);
 
     socket.on(ACTIONS.JOIN, ({ roomId, username }) => {
         userSocketMap[socket.id] = username;
@@ -49,31 +48,26 @@ io.on('connection', (socket) => {
     socket.on(ACTIONS.SYNC_CODE, ({ socketId, code }) => {
         io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
     });
-    // WebRTC Signaling
-    //socket.on('webrtc:offer', (data) => {
-    //    io.to(data.to).emit('webrtc:offer', { sdp: data.sdp, from: socket.id });
-    //});
 
-    //socket.on('webrtc:answer', (data) => {
-    //    io.to(data.to).emit('webrtc:answer', { sdp: data.sdp, from: socket.id });
-    //});
-
-    //socket.on('webrtc:ice-candidate', (data) => {
-    //    io.to(data.to).emit('webrtc:ice-candidate', { candidate: data.candidate, from: socket.id });
-    //});
+    socket.on('output', ({ roomId, output }) => {
+        io.in(roomId).emit('output', { output });
+    });
 
     socket.on('disconnecting', () => {
         const rooms = [...socket.rooms];
         rooms.forEach((roomId) => {
-            socket.in(roomId).emit(ACTIONS.DISCONNECTED, {
-                socketId: socket.id,
-                username: userSocketMap[socket.id],
+            socket.leave(roomId);
+            const clients = getAllConnectedClients(roomId);
+            clients.forEach(({ socketId }) => {
+                io.to(socketId).emit(ACTIONS.DISCONNECTED, {
+                    socketId: socket.id,
+                    username: userSocketMap[socket.id],
+                });
             });
         });
         delete userSocketMap[socket.id];
-        socket.leave();
     });
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
