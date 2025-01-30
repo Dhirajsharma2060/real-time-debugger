@@ -1,46 +1,48 @@
 .resizable-pane {
     display: flex;
     flex-direction: column;
-    height: 7vh;
+    height: 13vh;
     position: relative;
+    margin: 0; /* Remove any default margin */
+    padding: 0; /* Remove any default padding */
 }
 
 .pane {
     position: relative;
 }
 
-.top-pane {
-    height: 38%; /* Adjust the height as needed */
+.input-pane {
+    height: 84%; /* Adjust the height as needed */
     overflow: auto;
+    margin: 0; /* Remove any default margin */
+    padding: 0; /* Remove any default padding */
 }
 
-.bottom-pane {
-    display: flex;
-    height: 60%; /* Adjust the height as needed */
+.output-pane {
+    height: 94%; /* Adjust the height as needed */
     overflow: hidden;
-}
-
-.left-pane, .right-pane {
-    flex: 1;
-    overflow: auto;
-}
-
-.left-pane {
-    resize: horizontal;
-    overflow: auto;
+    margin: 0; /* Remove any default margin */
+    padding: 10px; /* Add padding for better readability */
+    background-color: #282a36; /* Match the editor background color */
+    color: #f8f8f2; /* Match the editor text color */
+    border-radius: 5px;
+    border: 1px solid #44475a;
+    width: 95%; 
 }
 
 .right-pane {
-    resize: horizontal;
+    flex: 1;
     overflow: auto;
+    resize: horizontal;
 }
-
-.drag-handle {
-    height: 10px;
-    background: #ccc;
-    cursor: row-resize;
-    position: absolute;
+.outputTextArea {
     width: 100%;
-    top: 40%; /* Adjust the position as needed */
-    z-index: 1;
+    height: 100%;
+    background-color: #282a36; /* Match the editor background color */
+    color: #f8f8f2; /* Match the editor text color */
+    border: none; /* Remove the default border */
+    resize: none; /* Prevent resizing */
+    padding: 10px; /* Add padding for better readability */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    overflow: hidden;
 }

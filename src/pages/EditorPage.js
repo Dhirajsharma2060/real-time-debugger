@@ -8,21 +8,21 @@ import { useLocation, useNavigate, Navigate, useParams } from 'react-router-dom'
 import ResizablePane from '../componenets/ResizablePane';
 
 const languages = [
-    { id: 63, name: "JavaScript (Node.js 12.14.0)" },
-    { id: 93, name: "JavaScript (Node.js 18.15.0)" },
-    { id: 97, name: "JavaScript (Node.js 20.17.0)" },
-    { id: 92, name: "Python (3.11.2)" },
-    { id: 100, name: "Python (3.12.5)" },
-    { id: 91, name: "Java (JDK 17.0.6)" },
-    { id: 105, name: "C++ (GCC 14.1.0)" },
-    { id: 104, name: "C (Clang 18.1.8)" },
-    { id: 60, name: "Go (1.13.5)" },
-    { id: 95, name: "Go (1.18.5)" },
-    { id: 94, name: "TypeScript (5.0.3)" },
-    { id: 101, name: "TypeScript (5.6.2)" },
-    { id: 83, name: "Swift (5.2.3)" },
-    { id: 73, name: "Rust (1.40.0)" },
-    { id: 82, name: "SQL (SQLite 3.27.2)" },
+    { id: 63, name: "JavaScript (Node.js 12.14.0)", mode: 'javascript' },
+    { id: 93, name: "JavaScript (Node.js 18.15.0)", mode: 'javascript' },
+    { id: 97, name: "JavaScript (Node.js 20.17.0)", mode: 'javascript' },
+    { id: 92, name: "Python (3.11.2)", mode: 'python' },
+    { id: 100, name: "Python (3.12.5)", mode: 'python' },
+    { id: 91, name: "Java (JDK 17.0.6)", mode: 'java' },
+    { id: 105, name: "C++ (GCC 14.1.0)", mode: 'cpp' },
+    { id: 104, name: "C (Clang 18.1.8)", mode: 'c' },
+    { id: 60, name: "Go (1.13.5)", mode: 'go' },
+    { id: 95, name: "Go (1.18.5)", mode: 'go' },
+    { id: 94, name: "TypeScript (5.0.3)", mode: 'javascript' },
+    { id: 101, name: "TypeScript (5.6.2)", mode: 'javascript' },
+    { id: 83, name: "Swift (5.2.3)", mode: 'swift' },
+    { id: 73, name: "Rust (1.40.0)", mode: 'rust' },
+    { id: 82, name: "SQL (SQLite 3.27.2)", mode: 'sql' },
 ];
 
 const EditorPage = () => {
@@ -191,6 +191,8 @@ const EditorPage = () => {
         return <Navigate to="/" />;
     }
 
+    const selectedLanguage = languages.find(lang => lang.id === language) || languages[0];
+
     return (
         <div className="mainWrap">
             <div className="aside">
@@ -213,6 +215,7 @@ const EditorPage = () => {
                     socketRef={socketRef}
                     roomId={roomId}
                     onCodeChange={(code) => { codeRef.current = code; }}
+                    languageMode={selectedLanguage.mode}
                 />
                 <select
                     value={language}
