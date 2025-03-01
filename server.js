@@ -53,6 +53,20 @@ io.on('connection', (socket) => {
         io.in(roomId).emit('output', { output });
     });
 
+    socket.on(ACTIONS.JOIN_VIDEO, ({ roomId }) => {
+        const usersInThisRoom = io.sockets.adapter.rooms.get(roomId) || new Set();
+        const users = Array.from(usersInThisRoom);
+        socket.emit(ACTIONS.ALL_USERS, users);
+    });
+
+    socket.on(ACTIONS.SENDING_SIGNAL, payload => {
+        io.to(payload.userToSignal).emit(ACTIONS.USER_JOINED, { signal: payload.signal, callerID: payload.callerID });
+    });
+
+    socket.on(ACTIONS.RETURNING_SIGNAL, payload => {
+        io.to(payload.callerID).emit(ACTIONS.RECEIVING_RETURNED_SIGNAL, { signal: payload.signal, id: socket.id });
+    });
+
     socket.on('disconnecting', () => {
         const rooms = [...socket.rooms];
         rooms.forEach((roomId) => {
@@ -66,6 +80,10 @@ io.on('connection', (socket) => {
             });
         });
         delete userSocketMap[socket.id];
+    });
+
+    socket.on('disconnect', () => {
+        socket.broadcast.emit(ACTIONS.USER_LEFT, socket.id);
     });
 });
 

@@ -6,6 +6,7 @@ import Editor from '../componenets/Editor';
 import { initSocket } from '../socket';
 import { useLocation, useNavigate, Navigate, useParams } from 'react-router-dom';
 import ResizablePane from '../componenets/ResizablePane';
+import VideoChat from '../componenets/VideoChat';
 
 const languages = [
     { id: 63, name: "JavaScript (Node.js 12.14.0)", mode: 'javascript' },
@@ -36,6 +37,8 @@ const EditorPage = () => {
     const codeRef = useRef(null); // Define codeRef
     const inputRef = useRef(null); // Define inputRef
     const [userInput, setUserInput] = useState(''); // Define userInput and setUserInput
+    const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+    const [isVideoEnabled, setIsVideoEnabled] = useState(false);
 
     useEffect(() => {
         const init = async () => {
@@ -187,6 +190,14 @@ const EditorPage = () => {
         socketRef.current.emit('output', { roomId, output });
     };
 
+    const toggleAudio = () => {
+        setIsAudioEnabled((prev) => !prev);
+    };
+
+    const toggleVideo = () => {
+        setIsVideoEnabled((prev) => !prev);
+    };
+
     if (!location.state) {
         return <Navigate to="/" />;
     }
@@ -207,6 +218,16 @@ const EditorPage = () => {
                         ))}
                     </div>
                 </div>
+                <div className="videoControls" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                    <button className="btn" onClick={toggleAudio}>
+                        {isAudioEnabled ? 'Disable Audio' : 'Enable Audio'}
+                    </button>
+                    <button className="btn" onClick={toggleVideo}>
+                        {isVideoEnabled ? 'Disable Video' : 'Enable Video'}
+                    </button>
+                </div>
+                &nbsp;
+                &nbsp;
                 <button className="btn copyBtn" onClick={copyRoomId}>Copy Room ID</button>
                 <button className="btn leaveBtn" onClick={leaveRoom}>Leave the Room</button>
             </div>
@@ -238,6 +259,7 @@ const EditorPage = () => {
                     <pre>{output}</pre>
                 </div>
                 <ResizablePane output={output} />
+                <VideoChat socketRef={socketRef} roomId={roomId} isAudioEnabled={isAudioEnabled} isVideoEnabled={isVideoEnabled} />
             </div>
         </div>
     );

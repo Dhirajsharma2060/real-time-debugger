@@ -20,6 +20,7 @@
     "react-router-dom": "^6.26.1",
     "react-scripts": "5.0.1",
     "react-split-pane": "^0.1.92",
+    "simple-peer": "^9.11.1",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "uuid": "^10.0.0",
