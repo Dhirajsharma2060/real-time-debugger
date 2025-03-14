@@ -215,3 +215,93 @@ footer a:hover {
   border-color: #50fa7b; /* Change border color on hover */
   background-color: #44475a; /* Change background color on hover */
 }
+
+/* Video Call Styles */
+.video-call-container {
+    margin-top: 20px;
+    width: 100%;
+}
+
+.video-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.video-call-controls {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.videos-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.video-item {
+    position: relative;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #282a36;
+}
+
+.local-video {
+    border: 2px solid #4aed88;
+}
+
+.video-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.video-label {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.call-btn {
+    background-color: #4aed88;
+    margin-top: 10px;
+    width: 150px;
+}
+
+.end-call-btn {
+    background-color: #ff4d4f;
+    color: white;
+    width: 150px;
+}
+
+.call-notification {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.call-notification button {
+    background-color: #4aed88;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.startCallBtn {
+    background-color: #4aed88;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}

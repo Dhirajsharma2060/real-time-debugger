@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import ACTIONS from '../Action';
 import Client from '../componenets/Client';
 import Editor from '../componenets/Editor';
+import VideoCall from '../componenets/VideoCall'; // Import VideoCall component
 import { initSocket } from '../socket';
 import { useLocation, useNavigate, Navigate, useParams } from 'react-router-dom';
 
@@ -35,6 +36,7 @@ const EditorPage = () => {
     const codeRef = useRef(null); // Define codeRef
     const inputRef = useRef(null); // Define inputRef
     const [userInput, setUserInput] = useState(''); // Define userInput and setUserInput
+    const [isCallActive, setIsCallActive] = useState(false); // Track call state
 
     useEffect(() => {
         const init = async () => {
@@ -70,14 +72,52 @@ const EditorPage = () => {
 
                 socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
                     console.log(`User ${username} disconnected with socket ID ${socketId}`);
-                    toast.success(`${username} left the room.`);
+                    
+                    // Replace this line
+                    toast(`${username} left the room.`, {
+                        style: {
+                            border: '1px solid #3498db',
+                            padding: '16px',
+                            color: '#3498db',
+                        },
+                        icon: 'ℹ️',
+                    });
+                    
+                    // Update clients state to remove the disconnected user
                     setClients((prev) => prev.filter((client) => client.socketId !== socketId));
+                    
+                    // If call is active and the disconnected user was part of it,
+                    // ensure their video feed is removed
+                    if (isCallActive) {
+                        socketRef.current.emit('user-left-call', { 
+                            roomId, 
+                            socketId, 
+                            username 
+                        });
+                    }
                 });
 
                 // Listen for output event
                 socketRef.current.on('output', ({ output }) => {
                     console.log(`Received output: ${output}`);
                     setOutput(output);
+                });
+
+                // Replace the existing call-initiated event handler
+                socketRef.current.on('call-initiated', ({ from, username }) => {
+                    console.log(`Received call initiation request from socket ID ${from}`);
+                    toast((t) => (
+                        <span className="call-notification">
+                            <b>{username || 'Someone'}</b> started a call.
+                            <button onClick={() => {
+                                toast.dismiss(t);
+                                setIsCallActive(true);
+                            }}>Join Call</button>
+                        </span>
+                    ), { 
+                        duration: 10000,
+                        position: "top-center"
+                    });
                 });
             }
         };
@@ -92,6 +132,15 @@ const EditorPage = () => {
             }
         };
     }, [roomId, location.state?.username, reactNavigator]);
+
+    const joinCall = (toastId) => {
+        setIsCallActive(true);
+        toast.dismiss(toastId);
+    };
+
+    const startCall = () => {
+        setIsCallActive(true);
+    };
 
     const copyRoomId = useCallback(async () => {
         try {
@@ -243,6 +292,8 @@ const EditorPage = () => {
                         placeholder='Output will be displayed here'
                     />
                 </div>
+                <button className="btn startCallBtn" onClick={startCall}>Start Call</button> {/* Add Start Call button */}
+                {isCallActive && <VideoCall socketRef={socketRef} roomId={roomId} clients={clients} />} {/* Pass clients to VideoCall component */}
             </div>
         </div>
     );
