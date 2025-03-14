@@ -5,7 +5,6 @@ import Client from '../componenets/Client';
 import Editor from '../componenets/Editor';
 import { initSocket } from '../socket';
 import { useLocation, useNavigate, Navigate, useParams } from 'react-router-dom';
-import ResizablePane from '../componenets/ResizablePane';
 
 const languages = [
     { id: 63, name: "JavaScript (Node.js 12.14.0)", mode: 'javascript' },
@@ -237,9 +236,13 @@ const EditorPage = () => {
                 <button className="btn executeBtn" onClick={executeCode}>Execute Code</button>
                 <div className="output">
                     <h3>Output:</h3>
-                    <pre>{output}</pre>
+                    <textarea
+                        value={output}
+                        readOnly
+                        className="outputTextArea"
+                        placeholder='Output will be displayed here'
+                    />
                 </div>
-                <ResizablePane output={output} />
             </div>
         </div>
     );

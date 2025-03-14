@@ -26,8 +26,6 @@ function getAllConnectedClients(roomId) {
 }
 
 io.on('connection', (socket) => {
-    console.log('Socket connected:', socket.id);
-
     socket.on(ACTIONS.JOIN, ({ roomId, username }) => {
         // Check if username already exists in the room
         const existingClients = getAllConnectedClients(roomId);
@@ -35,7 +33,7 @@ io.on('connection', (socket) => {
             userSocketMap[client.socketId] === username
         );
         
-        if (duplicateUser) {
+        if (duplicateUser && duplicateUser.socketId !== socket.id) {
             console.log(`Duplicate connection for user ${username}. Updating socket ID from ${duplicateUser.socketId} to ${socket.id}`);
             
             // Remove old socket from room
@@ -83,12 +81,11 @@ io.on('connection', (socket) => {
                 });
             });
         });
-        console.log(`User ${userSocketMap[socket.id]} disconnected with socket ID ${socket.id}`);
-        delete userSocketMap[socket.id];
     });
 
     socket.on('disconnect', () => {
-        console.log('Socket disconnected:', socket.id);
+        console.log(`Socket disconnected: ${socket.id}`);
+        delete userSocketMap[socket.id];
     });
 });
 
