@@ -39,10 +39,10 @@ const EditorPage = () => {
 
     useEffect(() => {
         const init = async () => {
-            if (!socketRef.current) { // Only initialize if the socket is not already connected
+            if (!socketRef.current) {
                 socketRef.current = await initSocket();
+                console.log('Socket initialized:', socketRef.current.id);
 
-                // Register error handlers
                 socketRef.current.on('connect_error', (err) => handleErrors(err));
                 socketRef.current.on('connect_failed', (err) => handleErrors(err));
 
@@ -52,19 +52,13 @@ const EditorPage = () => {
                     reactNavigator('/');
                 }
 
-                // Listen for output events
-                socketRef.current.on('output', ({ output }) => {
-                    setOutput(output);
-                });
-
-                // Emit join event
                 socketRef.current.emit(ACTIONS.JOIN, {
                     roomId,
                     username: location.state?.username,
                 });
 
-                // Listening for joined event
                 socketRef.current.on(ACTIONS.JOINED, ({ clients, username, socketId }) => {
+                    console.log(`User ${username} joined with socket ID ${socketId}`);
                     if (username !== location.state?.username) {
                         toast.success(`${username} joined the room.`);
                     }
@@ -75,10 +69,16 @@ const EditorPage = () => {
                     });
                 });
 
-                // Listening for disconnected event
                 socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
+                    console.log(`User ${username} disconnected with socket ID ${socketId}`);
                     toast.success(`${username} left the room.`);
                     setClients((prev) => prev.filter((client) => client.socketId !== socketId));
+                });
+
+                // Listen for output event
+                socketRef.current.on('output', ({ output }) => {
+                    console.log(`Received output: ${output}`);
+                    setOutput(output);
                 });
             }
         };
@@ -87,7 +87,9 @@ const EditorPage = () => {
 
         return () => {
             if (socketRef.current) {
-                socketRef.current.disconnect(); // Properly close the connection on unmount
+                console.log('Socket disconnecting:', socketRef.current.id);
+                socketRef.current.disconnect();
+                socketRef.current = null; // Ensure the socket is cleaned up
             }
         };
     }, [roomId, location.state?.username, reactNavigator]);
